@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MBBS Viva Tracker — Hemodynamic Disorders</title>
+<style>
+:root { color-scheme: light; --ink:#202638; --muted:#647087; --line:#dce2eb; --paper:#fff; --bg:#f3f5f9; --accent:#3457d5; --accent-soft:#e9edff; --green:#18865b; }
+* { box-sizing:border-box; }
+body { margin:0; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--ink); background:var(--bg); line-height:1.45; }
+header { background:linear-gradient(135deg,#253b80,#526bd5); color:white; padding:26px 18px 22px; }
+.wrap { width:min(900px,100%); margin:0 auto; }
+h1 { font-size:clamp(1.45rem,4vw,2rem); margin:0 0 6px; }
+.subtitle { margin:0; opacity:.9; }
+main { padding:18px 14px 36px; }
+.summary { background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:18px; box-shadow:0 3px 12px #1c2b4a0a; margin-bottom:16px; }
+.summary-top { display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.big-percent { font-size:1.6rem; font-weight:800; color:var(--accent); }
+progress { width:100%; height:13px; margin:10px 0 4px; appearance:none; border:0; border-radius:99px; overflow:hidden; }
+progress::-webkit-progress-bar { background:#e6eaf2; border-radius:99px; }
+progress::-webkit-progress-value { background:var(--accent); border-radius:99px; }
+progress::-moz-progress-bar { background:var(--accent); border-radius:99px; }
+.small { color:var(--muted); font-size:.9rem; }
+.controls { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+button { font:inherit; cursor:pointer; border-radius:10px; padding:9px 13px; border:1px solid var(--line); background:white; color:var(--ink); min-height:42px; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline:3px solid #91a4ff; outline-offset:2px; }
+button.primary { background:var(--accent); color:white; border-color:var(--accent); }
+button.danger { color:#a52929; }
+.topic { background:var(--paper); border:1px solid var(--line); border-radius:14px; margin:12px 0; overflow:hidden; }
+.topic summary { cursor:pointer; list-style:none; padding:15px 16px; display:flex; align-items:center; gap:12px; }
+.topic summary::-webkit-details-marker { display:none; }
+.topic summary::before { content:"＋"; font-weight:800; color:var(--accent); width:1em; }
+.topic[open] summary::before { content:"−"; }
+.topic-title { font-weight:750; flex:1; }
+.topic-meta { color:var(--muted); font-size:.88rem; white-space:nowrap; }
+.topic progress { width:calc(100% - 32px); margin:0 16px 12px; height:7px; }
+.questions { border-top:1px solid var(--line); padding:4px 16px 12px; }
+.question { display:flex; align-items:flex-start; gap:11px; padding:12px 0; border-bottom:1px solid #edf0f5; }
+.question:last-child { border-bottom:0; }
+.question input { width:21px; height:21px; flex:0 0 21px; margin:2px 0 0; accent-color:var(--green); cursor:pointer; }
+.question label { cursor:pointer; flex:1; }
+.question input:checked + label { color:#697487; text-decoration:line-through; text-decoration-thickness:1px; }
+.note { padding:12px 14px; background:#fff8e6; border:1px solid #f0dfa8; border-radius:12px; color:#6c5414; font-size:.92rem; margin-bottom:16px; }
+footer { text-align:center; color:var(--muted); font-size:.85rem; padding:8px 12px 26px; }
+@media (max-width:520px) { header{padding:22px 15px;} main{padding:12px 10px 28px;} .summary{padding:14px;} .topic summary{padding:13px 12px; gap:8px;} .topic-meta{font-size:.8rem;} .questions{padding:3px 12px 8px;} .question{padding:13px 0;} }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>MBBS Viva Study Tracker</h1>
+  <p class="subtitle">Pathology · Hemodynamic Disorders + Electrolytes</p>
+</div></header>
+<main class="wrap">
+  <section class="summary" aria-label="Overall progress">
+    <div class="summary-top"><strong>Overall completion</strong><span class="big-percent" id="overallPercent">0%</span></div>
+    <progress id="overallBar" value="0" max="100" aria-label="Overall completion percentage"></progress>
+    <div class="small" id="overallCount">0 of 0 questions completed</div>
+    <div class="controls">
+      <button type="button" id="expandAll">Expand all topics</button>
+      <button type="button" id="collapseAll">Collapse all topics</button>
+      <button type="button" class="danger" id="reset">Reset all progress</button>
+    </div>
+    <p class="small">Progress is saved automatically in this browser on this device.</p>
+  </section>
+  <div class="note"><strong>Organization note:</strong> Questions are kept from your supplied list; the two “Define infarct” prompts are combined, while their additional sub-questions are preserved. No separate hemorrhage-only or hemostasis-only viva question was supplied, so no new questions have been invented. Electrolytes are included as a final topic.</div>
+  <div id="topics"></div>
+</main>
+<footer>Tip: use the same HTML file in the same browser to continue your progress.</footer>
+<script>
+const topics = [
+ {name:"1. Edema", questions:[
+  "Define edema. Tell some important diseases where transudate occurs.",
+  "Tell the important causes of edema formation.",
+  "How does edema occur in inflammation?",
+  "What are anasarca and effusion?",
+  "Name some diseases where edema occurs due to increased hydrostatic pressure.",
+  "How does exudative edema occur in acute inflammation?"
+ ]},
+ {name:"2. Hyperemia", questions:[
+  "What are hyperemia and congestion? Differentiate between them and give common examples."
+ ]},
+ {name:"3. Congestion", questions:[]},
+ {name:"4. Hemorrhage", questions:[]},
+ {name:"5. Hemostasis and Thrombosis", questions:[
+  "What is a mural thrombus?",
+  "Differentiate thrombus from post-mortem clot.",
+  "Define thrombus and describe Virchow’s triad.",
+  "Why does prolonged bed rest result in pulmonary embolism?"
+ ]},
+ {name:"6. Embolism", questions:[
+  "Define embolus and mention its common sources.",
+  "What are the other sources of emboli?",
+  "Classify emboli with an example of each.",
+  "How does fat embolism occur? What is fat embolism syndrome?",
+  "What is decompression sickness? How much air is needed to produce a clinical effect?",
+  "What is caisson disease? What are its clinical effects?",
+  "Why is amniotic fluid embolism so dangerous?",
+  "What are the sources of pulmonary embolism? Mention its clinical consequences and fate."
+ ]},
+ {name:"7. Infarction", questions:[
+  "Define infarct and state the underlying causes of infarction.",
+  "In which organs does a white infarct occur?",
+  "What factors influence the development of an infarct?",
+  "In which organs do red infarcts occur, and why?"
+ ]},
+ {name:"8. Shock", questions:[
+  "Why does the skin become cool and pale in the early non-progressive phase of shock?",
+  "What changes occur in the progressive phase of shock?",
+  "Classify shock. What type of shock occurs in severe burns?"
+ ]},
+ {name:"9. Electrolytes and Acid–Base Disorders", questions:[
+  "What is hyperkalemia? Mention the causes.",
+  "What is hyponatremia? Mention the causes.",
+  "What is hypernatremia? Mention the causes.",
+  "What is hypocalcemia? Mention the causes.",
+  "What is hypercalcemia? Mention the causes.",
+  "What is metabolic acidosis? What are the causes?",
+  "What is metabolic alkalosis? What are the causes?"
+ ]}
+];
+const STORAGE_KEY = "mbbs_viva_hemodynamic_tracker_v1";
+const root = document.getElementById("topics");
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") || {}; } catch(e) { saved = {}; }
+let questionIndex = 0;
+topics.forEach((topic, ti) => {
+  const details = document.createElement("details");
+  details.className = "topic";
+  details.open = ti === 0;
+  const summary = document.createElement("summary");
+  const title = document.createElement("span"); title.className = "topic-title"; title.textContent = topic.name;
+  const meta = document.createElement("span"); meta.className = "topic-meta"; meta.id = `meta-${ti}`;
+  summary.append(title, meta);
+  details.appendChild(summary);
+  const bar = document.createElement("progress"); bar.id = `bar-${ti}`; bar.max = 100; bar.value = 0; bar.setAttribute("aria-label", topic.name + " completion");
+  details.appendChild(bar);
+  const list = document.createElement("div"); list.className = "questions";
+  if (!topic.questions.length) {
+    const empty = document.createElement("p"); empty.className = "small";
+    empty.textContent = "No separate questions were included for this topic in the supplied list.";
+    list.appendChild(empty);
+  }
+  topic.questions.forEach((question) => {
+    const id = `q-${questionIndex++}`;
+    const row = document.createElement("div"); row.className = "question";
+    const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.id = id;
+    checkbox.checked = saved[id] === true;
+    checkbox.addEventListener("change", () => { saved[id] = checkbox.checked; persist(); updateProgress(); });
+    const label = document.createElement("label"); label.htmlFor = id; label.textContent = question;
+    row.append(checkbox, label); list.appendChild(row);
+  });
+  details.appendChild(list); root.appendChild(details);
+});
+function persist() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(saved)); }
+  catch(e) { alert("This browser did not allow progress to be saved. Try opening the file in a regular browser and allow local storage."); }
+}
+function updateProgress() {
+  const boxes = [...document.querySelectorAll('.question input[type="checkbox"]')];
+  const done = boxes.filter(b => b.checked).length;
+  const pct = boxes.length ? Math.round(done / boxes.length * 100) : 0;
+  document.getElementById("overallPercent").textContent = pct + "%";
+  document.getElementById("overallBar").value = pct;
+  document.getElementById("overallCount").textContent = `${done} of ${boxes.length} questions completed`;
+  topics.forEach((topic, ti) => {
+    const section = root.children[ti];
+    const topicBoxes = [...section.querySelectorAll('.question input[type="checkbox"]')];
+    const topicDone = topicBoxes.filter(b => b.checked).length;
+    const topicPct = topicBoxes.length ? Math.round(topicDone / topicBoxes.length * 100) : 0;
+    document.getElementById(`meta-${ti}`).textContent = topicBoxes.length ? `${topicDone}/${topicBoxes.length}` : "0 questions";
+    document.getElementById(`bar-${ti}`).value = topicPct;
+  });
+}
+document.getElementById("expandAll").addEventListener("click", () => document.querySelectorAll(".topic").forEach(t => t.open = true));
+document.getElementById("collapseAll").addEventListener("click", () => document.querySelectorAll(".topic").forEach(t => t.open = false));
+document.getElementById("reset").addEventListener("click", () => {
+  if (confirm("Reset all checked questions and clear saved progress? This cannot be undone.")) {
+    saved = {};
+    document.querySelectorAll('.question input[type="checkbox"]').forEach(b => b.checked = false);
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+    updateProgress();
+  }
+});
+updateProgress();
+</script>
+</body>
+</html>
