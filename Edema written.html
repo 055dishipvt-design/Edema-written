@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f8fa">
+<title>MBBS Pathology — Study Tracker</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f7f8fa; --surface:#fff; --surface-2:#f3f5f7; --text:#22262b; --muted:#65707b; --line:#e1e5e9; --blue:#246fbd; --blue-soft:#e9f3fc; --green:#28794f; --green-soft:#eaf5ee; --amber:#8b5a14; --amber-soft:#fff4dd; --shadow:0 4px 18px rgba(25,38,52,.055); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#17191c; --surface:#202327; --surface-2:#292d32; --text:#f1f3f5; --muted:#b2bac3; --line:#3a4148; --blue:#75b8f6; --blue-soft:#1d3448; --green:#85d1a4; --green-soft:#20372a; --amber:#f3c773; --amber-soft:#40341c; --shadow:0 4px 18px rgba(0,0,0,.2); } }
+  * { box-sizing:border-box; }
+  html { background:var(--bg); scroll-behavior:smooth; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+  .wrap { width:min(100% - 40px, 920px); margin:0 auto; padding:34px 0 56px; }
+  header { margin-bottom:22px; }
+  .eyebrow { margin:0 0 8px; color:var(--blue); font-size:.82rem; font-weight:750; letter-spacing:.08em; text-transform:uppercase; }
+  h1 { margin:0; max-width:760px; font-size:clamp(1.8rem,5vw,2.65rem); line-height:1.15; letter-spacing:-.035em; }
+  .intro { max-width:700px; margin:12px 0 0; color:var(--muted); }
+  .notice { margin:20px 0 22px; padding:12px 15px; border:1px solid var(--line); border-left:4px solid var(--blue); border-radius:9px; background:var(--surface); color:var(--muted); font-size:.92rem; }
+  .overview { padding:20px; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:var(--shadow); }
+  .overview-top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+  .overview h2 { margin:0; font-size:1.12rem; }
+  .big-percent { color:var(--blue); font-variant-numeric:tabular-nums; font-size:1.55rem; font-weight:750; line-height:1.1; }
+  .summary-line { margin:5px 0 14px; color:var(--muted); font-size:.92rem; }
+  .track { height:11px; overflow:hidden; border-radius:999px; background:var(--surface-2); }
+  .fill { width:0; height:100%; border-radius:inherit; background:var(--blue); transition:width .18s ease; }
+  .tools { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+  button { min-height:44px; padding:9px 13px; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--text); font:inherit; font-size:.91rem; font-weight:650; cursor:pointer; }
+  button:hover { border-color:var(--blue); }
+  button:focus-visible, input:focus-visible, summary:focus-visible { outline:3px solid color-mix(in srgb,var(--blue) 55%,transparent); outline-offset:2px; }
+  button.danger { color:#a53c35; }
+  @media (prefers-color-scheme: dark) { button.danger { color:#ff9f98; } }
+  .save-status { min-height:22px; margin:10px 0 0; color:var(--muted); font-size:.84rem; }
+  .topic-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:30px 0 12px; }
+  .topic-heading h2 { margin:0; font-size:1.28rem; }
+  .topic-list { display:grid; gap:11px; }
+  details.topic { overflow:hidden; border:1px solid var(--line); border-radius:12px; background:var(--surface); box-shadow:0 1px 4px rgba(25,38,52,.025); }
+  summary { display:flex; min-height:64px; align-items:center; gap:12px; padding:13px 16px; cursor:pointer; list-style:none; }
+  summary::-webkit-details-marker { display:none; }
+  .chevron { display:inline-grid; width:24px; height:24px; flex:0 0 24px; place-items:center; border-radius:6px; background:var(--surface-2); color:var(--muted); transition:transform .15s ease; }
+  details[open] .chevron { transform:rotate(90deg); }
+  .topic-name { min-width:0; flex:1; font-weight:720; }
+  .topic-count { color:var(--muted); font-size:.84rem; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .topic-body { padding:0 16px 16px; border-top:1px solid var(--line); }
+  .topic-progress { display:flex; align-items:center; gap:10px; padding:14px 0 6px; color:var(--muted); font-size:.84rem; }
+  .topic-progress .track { height:7px; flex:1; }
+  .topic-progress .fill { background:var(--green); }
+  .question-list { display:grid; gap:8px; padding-top:8px; }
+  .question { display:grid; grid-template-columns:24px minmax(0,1fr); align-items:start; gap:11px; padding:12px; border:1px solid var(--line); border-radius:9px; background:var(--surface); }
+  .question:hover { background:var(--surface-2); }
+  .question input { width:20px; height:20px; margin:2px 0 0; accent-color:var(--blue); cursor:pointer; }
+  .question label { display:block; cursor:pointer; overflow-wrap:anywhere; }
+  .q-text { display:block; }
+  .question input:checked + label .q-text { color:var(--muted); text-decoration:line-through; text-decoration-thickness:1px; }
+  .years { display:block; margin-top:5px; color:var(--muted); font-size:.82rem; }
+  .empty-note { margin:13px 0 2px; padding:12px; border-radius:8px; background:var(--surface-2); color:var(--muted); font-size:.92rem; }
+  .source-note { margin:22px 0 0; color:var(--muted); font-size:.85rem; }
+  .no-results { display:none; padding:18px; border:1px dashed var(--line); border-radius:10px; color:var(--muted); text-align:center; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  @media (max-width:600px) { .wrap { width:min(100% - 28px, 920px); padding:23px 0 40px; } .overview { padding:16px; } .overview-top { align-items:center; } .topic-heading { margin-top:24px; } summary { gap:9px; padding:12px; } .topic-count { font-size:.78rem; } .topic-body { padding:0 11px 12px; } .question { gap:9px; padding:11px; } .tools button { flex:1 1 42%; } }
+  @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior:auto !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <p class="eyebrow">MBBS pathology · question bank</p>
+    <h1>Study tracker</h1>
+    <p class="intro">Work through the questions topic by topic. Each checked question updates the overall and topic progress automatically.</p>
+  </header>
+  <p class="notice">This version is organized from the question-bank text pasted in the chat. Hyperemia, congestion, and standalone hemorrhage questions were not present in that excerpt; those sections are included as placeholders for the rest of your bank.</p>
+  <section class="overview" aria-labelledby="progress-title">
+    <div class="overview-top"><h2 id="progress-title">Overall progress</h2><span id="overall-percent" class="big-percent">0%</span></div>
+    <p id="overall-count" class="summary-line">0 of 39 questions completed</p>
+    <div class="track" role="progressbar" aria-label="Overall question progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="overall-fill" class="fill"></div></div>
+    <div class="tools" aria-label="Tracker controls">
+      <button id="expand-all" type="button">Expand all topics</button>
+      <button id="collapse-all" type="button">Collapse all topics</button>
+      <button id="reset" class="danger" type="button">Reset progress</button>
+    </div>
+    <p id="save-status" class="save-status" role="status" aria-live="polite">Progress saves automatically in this browser.</p>
+  </section>
+  <div class="topic-heading"><h2>Topics</h2><span id="topic-total" class="topic-count"></span></div>
+  <section id="topics" class="topic-list" aria-label="Study topics"></section>
+  <p id="no-results" class="no-results">No questions match this view.</p>
+  <p class="source-note">Exam references have been retained, including unclear fragments. Obvious OCR typos in question wording have been lightly corrected. Equivalent formulations (including mechanism/pathogenesis of septic shock) are merged; broader or differently scoped questions remain separate. Distinct prompts in combined source items have their own checkboxes. Hemorrhagic shock and the RTA questions stay under Shock. Unattached numbering and scanner labels are not questions. Progress is stored locally in this browser, not in the HTML file or in Notion; it does not sync between devices and may be lost if browser data is cleared or the file is moved. Open in a full browser, not a file preview.</p>
+</main>
+<script>
+'use strict';
+const STORAGE_KEY = 'mbbs-pathology-tracker-v1';
+const topics = [
+  { id:'edema', title:'Edema', questions:[
+    { id:'edema-define', text:'Define edema. What do you mean by edema?', years:'DU-14Ja; DU-08Ju, 07Ja, 06S' },
+    { id:'edema-categories', text:'Define edema and state the pathophysiologic categories of edema.', years:'DU-16Ja' },
+    { id:'edema-nephrotic', text:'Explain the mechanism of edema in nephrotic syndrome.', years:'DU-16Ja' },
+    { id:'edema-nephritic', text:'Write the mechanism of edema in nephritic syndrome.', years:'DU-14Ja' },
+    { id:'edema-anasarca', text:'What is anasarca?', years:'DU-14Ja' },
+    { id:'edema-classify', text:'Classify edema.', years:'DU-07Ja, 06S' },
+    { id:'edema-mechanisms', text:'Give, in brief, the mechanisms of edema formation.', years:'DU-08Ju' },
+    { id:'edema-heart-failure', text:'How does edema develop in cardiac failure? Discuss the mechanism of edema in heart failure.', years:'DU-07Ju; DU-07Ja' }
+  ]},
+  { id:'hyperemia', title:'Hyperemia', questions:[] },
+  { id:'congestion', title:'Congestion', questions:[] },
+  { id:'hemorrhage', title:'Hemorrhage', questions:[] },
+  { id:'hemostasis-thrombosis', title:'Hemostasis and thrombosis', questions:[
+    { id:'hemo-platelets', text:'Describe briefly the role of platelets in normal hemostasis.', years:'DU-04M' },
+    { id:'hemo-antithrombotic-endothelium', text:'What are the antithrombotic properties of endothelial cells?', years:'DU-07Ja' },
+    { id:'thrombosis-definition', text:'What is thrombosis?', years:'DU-17M; 1 1Ju (as transcribed); DU-09Ja' },
+    { id:'thrombosis-endothelial-injury', text:'Discuss briefly the role of endothelial injury in thrombus formation.', years:'DU-10Ja' },
+    { id:'thrombosis-prothrombotic-endothelium', text:'Write down the prothrombotic role of endothelium in thrombus formation.', years:'DU-10Ja' },
+    { id:'thrombosis-flow', text:'How does altered blood flow cause thrombosis?', years:'DU-17M' },
+    { id:'thrombosis-venous-pathogenesis', text:'Write down the pathogenesis of venous thrombus.', years:'DU-16Ju' },
+    { id:'thrombosis-virchow-triad', text:'What is Virchow’s triad of thrombogenesis? Write a short note on Virchow’s triad in thrombosis.', years:'DU-26/18M, 10Ja; DU-24/23N; DU-22N, 21/19M, 14Ju, 13Ja; DU-17Nov' },
+    { id:'thrombosis-injury-flow', text:'Explain how endothelial injury and changes in blood flow lead to thrombus formation.', years:'DU-18M (year reconstructed from the broken line in the source)' },
+    { id:'thrombosis-hypercoagulability', text:'Mention the causes of hypercoagulability of blood.', years:'DU-26M' },
+    { id:'thrombosis-fate', text:'Give the fate of a thrombus.', years:'DU-07Ju' }
+  ]},
+  { id:'embolism', title:'Embolism', questions:[
+    { id:'embolism-classify', text:'Classify emboli on the basis of their composition.', years:'DU-03S' },
+    { id:'embolism-systemic', text:'Write briefly the pathogenesis and effects of systemic embolism.', years:'DU-04M' },
+    { id:'embolism-short-note', text:'Write a short note on embolism / emboli.', years:'DU-19Nov; DU-18Nov' },
+    { id:'embolism-pulmonary', text:'Write a short note on pulmonary embolism.', years:'DU-08Ju' },
+    { id:'embolism-fat', text:'Write a short note on fat embolism.', years:'DU-05S' },
+    { id:'embolism-air', text:'Write a short note on air embolism.', years:'DU-16Ja' },
+    { id:'embolism-femur-case', text:'A 38-year-old male was hospitalized with femur fractures. Two weeks later, the patient suddenly developed chest pain, cough, and haemoptysis. What is the most likely diagnosis, and what is the cause of this complication?', years:'DU-16Ju' }
+  ]},
+  { id:'infarction', title:'Infarction', questions:[
+    { id:'infarction-factors', text:'What are the factors that influence the formation of an infarct?', years:'DU-16/12Ju' },
+    { id:'infarction-red', text:'Write a short note on red infarct.', years:'DU-25/22M' },
+    { id:'infarction-red-white', text:'Write a short note on red and white infarcts.', years:'DU-17/15Ja' },
+    { id:'infarction-heart-lungs', text:'What types of infarct are seen in the heart and lungs?', years:'DU-12Ju' }
+  ]},
+  { id:'shock', title:'Shock', questions:[
+    { id:'shock-define', text:'Define shock.', years:'DU-25N; DU-20Nov/July; DU-09/08/07Ju' },
+    { id:'shock-types', text:'What are the types of shock?', years:'DU-20Nov/July' },
+    { id:'shock-anaphylactic', text:'What is anaphylactic shock?', years:'DU-15Ja' },
+    { id:'shock-stages-name', text:'Name the stages of shock.', years:'DU-25N; DU-15Ja; DU-10Ju' },
+    { id:'shock-hemorrhagic', text:'Write a short note on hemorrhagic shock.', years:'DU-20Nov/July' },
+    { id:'shock-septic-pathogenesis', text:'Write the mechanism / pathogenesis of septic shock.', years:'DU-08/07Ju; DU-25N; DU-20Nov/July; DU-13/09Ju' },
+    { id:'shock-hemorrhage-rta', text:'Discuss the pathophysiology of severe hemorrhage after a road traffic accident (RTA).', years:'DU-10Ju' },
+    { id:'shock-stages-short-note', text:'Write a short note on the stages of shock.', years:'DU-16Ju' },
+    { id:'shock-rta-pbq', text:'PBQ: A 40-year-old male presented with loss of consciousness and cold, clammy skin following severe bleeding due to an RTA. What is the probable diagnosis? What complications may occur?', years:'DU-25M' }
+  ]}
+];
+const topicsEl = document.getElementById('topics');
+const checked = new Set();
+let storageWorks = true;
+try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); if (Array.isArray(saved)) saved.forEach(id => checked.add(id)); } catch (_) { storageWorks = false; }
+const totalQuestions = topics.reduce((sum, topic) => sum + topic.questions.length, 0);
+document.getElementById('topic-total').textContent = `${topics.length} topics · ${totalQuestions} questions`;
+function createElement(tag, className, text) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  if (text !== undefined) el.textContent = text;
+  return el;
+}
+function renderTopics() {
+  topics.forEach((topic, index) => {
+    const details = createElement('details', 'topic');
+    details.dataset.topicId = topic.id;
+    if (index === 0) details.open = true;
+    const summary = document.createElement('summary');
+    const chevron = createElement('span', 'chevron', '›'); chevron.setAttribute('aria-hidden','true');
+    const name = createElement('span', 'topic-name', topic.title);
+    const count = createElement('span', 'topic-count'); count.dataset.countFor = topic.id;
+    summary.append(chevron, name, count); details.append(summary);
+    const body = createElement('div', 'topic-body');
+    const progress = createElement('div', 'topic-progress');
+    const progressText = createElement('span'); progressText.dataset.progressTextFor = topic.id;
+    const track = createElement('div', 'track'); track.setAttribute('role','progressbar'); track.setAttribute('aria-label',`${topic.title} progress`); track.setAttribute('aria-valuemin','0'); track.setAttribute('aria-valuemax','100');
+    const fill = createElement('div','fill'); fill.dataset.fillFor = topic.id; track.append(fill);
+    progress.append(progressText,track); body.append(progress);
+    if (!topic.questions.length) {
+      body.append(createElement('p','empty-note','No questions for this topic appeared in the pasted excerpt. Add the remaining question-bank pages and this section can be filled in.'));
+    } else {
+      const list = createElement('div','question-list');
+      topic.questions.forEach(q => {
+        const item = createElement('div','question');
+        const input = document.createElement('input'); input.type='checkbox'; input.id=q.id; input.dataset.questionId=q.id; input.checked=checked.has(q.id);
+        const label = document.createElement('label'); label.htmlFor=q.id;
+        label.append(createElement('span','q-text',q.text));
+        label.append(createElement('span','years',`Exam: ${q.years}`));
+        input.addEventListener('change', () => {
+          if (input.checked) checked.add(q.id); else checked.delete(q.id);
+          saveProgress(); updateProgress();
+        });
+        item.append(input,label); list.append(item);
+      });
+      body.append(list);
+    }
+    details.append(body); topicsEl.append(details);
+  });
+}
+function saveProgress() {
+  if (!storageWorks) return;
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...checked])); }
+  catch (_) { storageWorks=false; document.getElementById('save-status').textContent='Progress is updating for this session, but browser storage is unavailable. Keep this tab open to retain it.'; }
+}
+function updateProgress() {
+  let completed=0;
+  topics.forEach(topic => {
+    const done=topic.questions.reduce((n,q)=>n+(checked.has(q.id)?1:0),0); completed+=done;
+    const pct=topic.questions.length ? Math.round(done/topic.questions.length*100) : 0;
+    const count=document.querySelector(`[data-count-for="${topic.id}"]`);
+    const text=document.querySelector(`[data-progress-text-for="${topic.id}"]`);
+    const fill=document.querySelector(`[data-fill-for="${topic.id}"]`);
+    count.textContent=topic.questions.length ? `${done}/${topic.questions.length} done` : '0 questions';
+    text.textContent=topic.questions.length ? `${done} of ${topic.questions.length} complete` : 'No questions yet';
+    fill.style.width=`${pct}%`;
+    fill.parentElement.setAttribute('aria-valuenow',String(pct));
+  });
+  const pct=totalQuestions ? Math.round(completed/totalQuestions*100) : 0;
+  document.getElementById('overall-percent').textContent=`${pct}%`;
+  document.getElementById('overall-count').textContent=`${completed} of ${totalQuestions} questions completed`;
+  document.getElementById('overall-fill').style.width=`${pct}%`;
+  document.querySelector('[aria-label="Overall question progress"]').setAttribute('aria-valuenow',String(pct));
+  document.getElementById('save-status').textContent=storageWorks ? 'Progress saves automatically in this browser.' : 'Browser storage is unavailable. Progress will last only while this tab stays open.';
+}
+try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...checked])); } catch (_) { storageWorks=false; }
+renderTopics(); updateProgress();
+document.getElementById('expand-all').addEventListener('click',()=>document.querySelectorAll('details.topic').forEach(el=>el.open=true));
+document.getElementById('collapse-all').addEventListener('click',()=>document.querySelectorAll('details.topic').forEach(el=>el.open=false));
+document.getElementById('reset').addEventListener('click',()=>{
+  if (!window.confirm('Reset all checked questions and clear saved progress?')) return;
+  checked.clear(); document.querySelectorAll('input[type="checkbox"]').forEach(input=>input.checked=false); saveProgress(); updateProgress();
+});
+</script>
+</body>
+</html>
